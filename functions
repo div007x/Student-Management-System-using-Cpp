@@ -1,0 +1,198 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include "students"
+
+using namespace std;
+
+
+void addStudent() {
+    Student s;
+    ofstream file("students.txt", ios::app);
+
+    if (!file) {
+        cout << "Error opening file!\n";
+        return;
+    }
+
+    cout << "Enter ID: ";
+    cin >> s.id;
+    cin.ignore();
+
+    cout << "Enter Name: ";
+    getline(cin, s.name);
+
+    cout << "Enter Age: ";
+    cin >> s.age;
+    cin.ignore();
+
+    cout << "Enter Course: ";
+    getline(cin, s.course);
+
+    // Saving as Comma Separated Values (CSV)
+    file << s.id << "," << s.name << "," << s.age << "," << s.course << endl;
+
+    file.close();
+    cout << "OK Student added successfully!\n";
+}
+
+// ➤ Display Students
+void displayStudents() {
+    ifstream file("students.txt");
+    if (!file) {
+        cout << " No records found. Add a student first!\n";
+        return;
+    }
+
+    string line;
+    cout << "\n--- Student Records ---\n";
+
+    while (getline(file, line)) {
+        stringstream ss(line);
+        string id, name, age, course;
+
+        getline(ss, id, ',');
+        getline(ss, name, ',');
+        getline(ss, age, ',');
+        getline(ss, course, ',');
+
+        cout << "ID: " << id
+             << " | Name: " << name
+             << " | Age: " << age
+             << " | Course: " << course << endl;
+    }
+
+    file.close();
+}
+
+// ➤ Search Student
+void searchStudent() {
+    ifstream file("students.txt");
+    if (!file) {
+        cout << "No records found!\n";
+        return;
+    }
+
+    string line;
+    int searchId;
+    bool found = false;
+
+    cout << "Enter ID to search: ";
+    cin >> searchId;
+
+    while (getline(file, line)) {
+        stringstream ss(line);
+        string id, name, age, course;
+
+        getline(ss, id, ',');
+        getline(ss, name, ',');
+        getline(ss, age, ',');
+        getline(ss, course, ',');
+
+        if (stoi(id) == searchId) {
+            cout << "OK Found:\n";
+            cout << "ID: " << id << " | Name: " << name
+                 << " | Age: " << age << " | Course: " << course << endl;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) cout << "ERROR Student not found!\n";
+    file.close();
+}
+
+// ➤ Update Student
+void updateStudent() {
+    ifstream file("students.txt");
+    ofstream temp("temp.txt");
+
+    if (!file) {
+        cout << "No records found to update!\n";
+        return;
+    }
+
+    string line;
+    int updateId;
+    bool found = false;
+
+    cout << "Enter ID to update: ";
+    cin >> updateId;
+    cin.ignore();
+
+    while (getline(file, line)) {
+        stringstream ss(line);
+        string id, name, age, course;
+
+        getline(ss, id, ',');
+        getline(ss, name, ',');
+        getline(ss, age, ',');
+        getline(ss, course, ',');
+
+        if (stoi(id) == updateId) {
+            Student s;
+            s.id = updateId;
+
+            cout << "Enter new name: ";
+            getline(cin, s.name);
+            cout << "Enter new age: ";
+            cin >> s.age;
+            cin.ignore();
+            cout << "Enter new course: ";
+            getline(cin, s.course);
+
+            temp << s.id << "," << s.name << "," << s.age << "," << s.course << endl;
+            found = true;
+        } else {
+            temp << line << endl;
+        }
+    }
+
+    file.close();
+    temp.close();
+
+    remove("students.txt");
+    rename("temp.txt", "students.txt");
+
+    if (found) cout << "OK Student updated successfully!\n";
+    else cout << "ERROR Student not found!\n";
+}
+
+// ➤ Delete Student
+void deleteStudent() {
+    ifstream file("students.txt");
+    ofstream temp("temp.txt");
+
+    if (!file) {
+        cout << "⚠️ No records found to delete!\n";
+        return;
+    }
+
+    string line;
+    int deleteId;
+    bool found = false;
+
+    cout << "Enter ID to delete: ";
+    cin >> deleteId;
+
+    while (getline(file, line)) {
+        stringstream ss(line);
+        string idStr;
+        getline(ss, idStr, ',');
+
+        if (stoi(idStr) != deleteId) {
+            temp << line << endl;
+        } else {
+            found = true;
+        }
+    }
+
+    file.close();
+    temp.close();
+
+    remove("students.txt");
+    rename("temp.txt", "students.txt");
+
+    if (found) cout << "OK Student deleted successfully!\n";
+    else cout << "ERROR Student not found!\n";
+}
